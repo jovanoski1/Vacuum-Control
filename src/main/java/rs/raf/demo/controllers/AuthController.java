@@ -43,6 +43,12 @@ public class AuthController {
         boolean canUpdateUsers = u.getPermissions().stream().anyMatch(role -> role.getRole().equals("can_update_users"));
         boolean canDeleteUsers = u.getPermissions().stream().anyMatch(role -> role.getRole().equals("can_delete_users"));
 
+        boolean canSearchVacuum = u.getPermissions().stream().anyMatch(role -> role.getRole().equals("can_search_vacuum"));
+        boolean canStartVacuum = u.getPermissions().stream().anyMatch(role -> role.getRole().equals("can_start_vacuum"));
+        boolean canStopVacuum = u.getPermissions().stream().anyMatch(role -> role.getRole().equals("can_stop_vacuum"));
+        boolean canDischargeVacuum = u.getPermissions().stream().anyMatch(role -> role.getRole().equals("can_discharge_vacuum"));
+        boolean canAddVacuum = u.getPermissions().stream().anyMatch(role -> role.getRole().equals("can_add_vacuum"));
+        boolean canRemoveVacuum = u.getPermissions().stream().anyMatch(role -> role.getRole().equals("can_remove_vacuum"));
 
         return ResponseEntity.ok(
                 new LoginResponse(
@@ -50,7 +56,13 @@ public class AuthController {
                         canCreateUsers,
                         canReadUsers,
                         canUpdateUsers,
-                        canDeleteUsers
+                        canDeleteUsers,
+                        canSearchVacuum,
+                        canStartVacuum,
+                        canStopVacuum,
+                        canDischargeVacuum,
+                        canAddVacuum,
+                        canRemoveVacuum
                 )
         );
     }
