@@ -27,23 +27,47 @@ public class BootstrapData implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-
+//
+//        Role r01 = new Role();
+//        r01.setRole("can_read_users");
+//        roleRepository.save(r01);
+//
+//        Role r02 = new Role();
+//        r02.setRole("can_create_users");
+//        roleRepository.save(r02);
+//
+//        Role r03 = new Role();
+//        r03.setRole("can_update_users");
+//        roleRepository.save(r03);
+//
+//        Role r04 = new Role();
+//        r04.setRole("can_delete_users");
+//        roleRepository.save(r04);
+//
 //        Role r1 = new Role();
-//        r1.setRole("can_read_users");
+//        r1.setRole("can_search_vacuum");
 //        roleRepository.save(r1);
 //
 //        Role r2 = new Role();
-//        r2.setRole("can_create_users");
+//        r2.setRole("can_start_vacuum");
 //        roleRepository.save(r2);
 //
 //        Role r3 = new Role();
-//        r3.setRole("can_update_users");
+//        r3.setRole("can_stop_vacuum");
 //        roleRepository.save(r3);
 //
 //        Role r4 = new Role();
-//        r4.setRole("can_delete_users");
+//        r4.setRole("can_discharge_vacuum");
 //        roleRepository.save(r4);
-
+//
+//        Role r5 = new Role();
+//        r5.setRole("can_add_vacuum");
+//        roleRepository.save(r5);
+//
+//        Role r6 = new Role();
+//        r6.setRole("can_remove_vacuum");
+//        roleRepository.save(r6);
+//
 //        System.out.println("Loading Data...");
 //
 //        User user1 = new User();
@@ -53,10 +77,10 @@ public class BootstrapData implements CommandLineRunner {
 //        user1.setLastName("Jovanoski");
 //
 //        Set<Role> roles = new HashSet<>();
-//        roles.add(r1);
-//        roles.add(r2);
-//        roles.add(r3);
-//        roles.add(r4);
+//        roles.add(r01);
+//        roles.add(r02);
+//        roles.add(r03);
+//        roles.add(r04);
 //        user1.setPermissions(roles);
 //
 //        this.userRepository.save(user1);
