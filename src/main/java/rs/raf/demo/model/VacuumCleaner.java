@@ -24,5 +24,5 @@ public class VacuumCleaner {
     private User owner;
 
     @Version
-    private int version;
+    private Integer version;
 }

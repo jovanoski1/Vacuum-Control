@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.*;
 import rs.raf.demo.model.VacuumCleaner;
 import rs.raf.demo.services.VacuumCleanerService;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/cleaners")
 @CrossOrigin
@@ -22,9 +24,14 @@ public class VacuumCleanerController {
     }
 
 
-//    @PreAuthorize("hasAuthority('can_delete_users')")
+    @PreAuthorize("hasAuthority('can_add_vacuum')")
     @GetMapping("/{name}")
     public ResponseEntity<VacuumCleaner> create(@PathVariable("name") String name) {
         return ResponseEntity.ok(vacuumCleanerService.create(name, SecurityContextHolder.getContext().getAuthentication().getName()));
+    }
+
+    @GetMapping()
+    public ResponseEntity<List<VacuumCleaner>> getAll(){
+        return ResponseEntity.ok(vacuumCleanerService.getAllByOwner(SecurityContextHolder.getContext().getAuthentication().getName()));
     }
 }

@@ -6,6 +6,8 @@ import rs.raf.demo.model.VacuumCleaner;
 import rs.raf.demo.repositories.UserRepository;
 import rs.raf.demo.repositories.VacuumCleanerRepository;
 
+import java.util.List;
+
 @Service
 public class VacuumCleanerService {
 
@@ -24,6 +26,10 @@ public class VacuumCleanerService {
         vacuumCleaner.setOwner(userRepository.findUserByEmail(email));
         vacuumCleanerRepository.save(vacuumCleaner);
         return vacuumCleaner;
+    }
+
+    public List<VacuumCleaner> getAllByOwner(String email){
+        return vacuumCleanerRepository.findVacuumCleanersByOwner(userRepository.findUserByEmail(email));
     }
 
 }
