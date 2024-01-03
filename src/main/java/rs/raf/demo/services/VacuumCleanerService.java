@@ -6,6 +6,7 @@ import rs.raf.demo.model.VacuumCleaner;
 import rs.raf.demo.model.VacuumStatus;
 import rs.raf.demo.repositories.UserRepository;
 import rs.raf.demo.repositories.VacuumCleanerRepository;
+import rs.raf.demo.tasks.DischargeVacuumCleanerTask;
 import rs.raf.demo.tasks.StartVacuumCleanerTask;
 import rs.raf.demo.tasks.StopVacuumCleanerTask;
 
@@ -62,6 +63,19 @@ public class VacuumCleanerService {
         }
 
         Thread newThread = new Thread(new StopVacuumCleanerTask(vacuumCleaner, vacuumCleanerRepository));
+        newThread.start();
+
+        return true;
+    }
+
+    public boolean dischargeVC(Long id){
+        VacuumCleaner vacuumCleaner = this.vacuumCleanerRepository.getById(id);
+
+        if (!vacuumCleaner.getStatus().equals(VacuumStatus.STOPPED)){
+            return false;
+        }
+
+        Thread newThread = new Thread(new DischargeVacuumCleanerTask(vacuumCleaner, vacuumCleanerRepository));
         newThread.start();
 
         return true;

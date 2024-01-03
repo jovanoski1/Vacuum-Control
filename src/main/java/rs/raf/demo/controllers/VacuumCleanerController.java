@@ -53,4 +53,9 @@ public class VacuumCleanerController {
         return ResponseEntity.ok(vacuumCleanerService.stopVC(id));
     }
 
+    @PreAuthorize("hasAuthority('can_discharge_vacuum')")
+    @GetMapping("/discharge/{id}")
+    public ResponseEntity<Boolean> dischargeVC(@PathVariable("id") Long id){
+        return ResponseEntity.ok(vacuumCleanerService.dischargeVC(id));
+    }
 }

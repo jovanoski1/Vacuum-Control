@@ -17,6 +17,7 @@ public class VacuumCleaner {
     private String name;
     private VacuumStatus status = VacuumStatus.STOPPED;
     private boolean active = true;
+    private int numOfCycles = 0;
 
     @ManyToOne
     @JoinColumn(name = "addedBy", referencedColumnName = "userId")
