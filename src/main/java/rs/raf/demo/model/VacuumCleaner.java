@@ -24,5 +24,6 @@ public class VacuumCleaner {
     private User owner;
 
     @Version
+    @JsonIgnore
     private Integer version;
 }

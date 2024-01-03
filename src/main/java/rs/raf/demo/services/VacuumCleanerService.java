@@ -24,12 +24,18 @@ public class VacuumCleanerService {
         VacuumCleaner vacuumCleaner = new VacuumCleaner();
         vacuumCleaner.setName(name);
         vacuumCleaner.setOwner(userRepository.findUserByEmail(email));
-        vacuumCleanerRepository.save(vacuumCleaner);
+        this.vacuumCleanerRepository.save(vacuumCleaner);
         return vacuumCleaner;
     }
 
     public List<VacuumCleaner> getAllByOwner(String email){
-        return vacuumCleanerRepository.findVacuumCleanersByOwner(userRepository.findUserByEmail(email));
+        return this.vacuumCleanerRepository.findVacuumCleanersByOwner(userRepository.findUserByEmail(email));
+    }
+
+    public VacuumCleaner removeCleaner(Long id){
+        VacuumCleaner vacuumCleaner = this.vacuumCleanerRepository.getById(id);
+        vacuumCleaner.setActive(false);
+        return this.vacuumCleanerRepository.save(vacuumCleaner);
     }
 
 }

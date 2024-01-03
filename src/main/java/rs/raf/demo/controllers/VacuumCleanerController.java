@@ -6,9 +6,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import rs.raf.demo.model.User;
 import rs.raf.demo.model.VacuumCleaner;
+import rs.raf.demo.requests.UpdateUserRequest;
 import rs.raf.demo.services.VacuumCleanerService;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -33,5 +36,11 @@ public class VacuumCleanerController {
     @GetMapping()
     public ResponseEntity<List<VacuumCleaner>> getAll(){
         return ResponseEntity.ok(vacuumCleanerService.getAllByOwner(SecurityContextHolder.getContext().getAuthentication().getName()));
+    }
+
+    @PreAuthorize("hasAuthority('can_remove_vacuum')")
+    @PostMapping("/remove/{id}")
+    public ResponseEntity<VacuumCleaner> removeVC(@PathVariable("id") Long id) {
+        return ResponseEntity.ok(vacuumCleanerService.removeCleaner(id));
     }
 }
