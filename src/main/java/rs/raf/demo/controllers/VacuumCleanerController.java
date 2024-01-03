@@ -43,4 +43,10 @@ public class VacuumCleanerController {
     public ResponseEntity<VacuumCleaner> removeVC(@PathVariable("id") Long id) {
         return ResponseEntity.ok(vacuumCleanerService.removeCleaner(id));
     }
+
+    @PreAuthorize("hasAuthority('can_start_vacuum')")
+    @GetMapping("/start/{id}")
+    public ResponseEntity<Boolean> startVC(@PathVariable("id") Long id){
+        return ResponseEntity.ok(vacuumCleanerService.startVC(id));
+    }
 }
