@@ -1,5 +1,6 @@
 package rs.raf.demo.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 
 import javax.persistence.*;
@@ -19,5 +20,9 @@ public class VacuumCleaner {
 
     @ManyToOne
     @JoinColumn(name = "addedBy", referencedColumnName = "userId")
+    @JsonIgnore
     private User owner;
+
+    @Version
+    private int version;
 }
