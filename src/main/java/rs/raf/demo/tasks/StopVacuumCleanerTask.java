@@ -8,7 +8,7 @@ import rs.raf.demo.repositories.VacuumCleanerRepository;
 import java.util.Random;
 
 public class StopVacuumCleanerTask implements Runnable{
-    private final VacuumCleaner vacuumCleaner;
+    private VacuumCleaner vacuumCleaner;
     private final VacuumCleanerRepository vacuumCleanerRepository;
 
     public StopVacuumCleanerTask(VacuumCleaner vacuumCleaner, VacuumCleanerRepository vacuumCleanerRepository) {
@@ -24,7 +24,13 @@ public class StopVacuumCleanerTask implements Runnable{
             Thread.sleep(15000 + r.nextInt(6)*1000);
 
             vacuumCleaner.setStatus(VacuumStatus.STOPPED);
-            vacuumCleanerRepository.save(vacuumCleaner);
+            vacuumCleaner.setNumOfCycles(vacuumCleaner.getNumOfCycles() + 1);
+            vacuumCleaner = vacuumCleanerRepository.save(vacuumCleaner);
+
+            if (vacuumCleaner.getNumOfCycles() % 3 == 0){
+                Thread discharge = new Thread(new DischargeVacuumCleanerTask(vacuumCleaner,vacuumCleanerRepository));
+                discharge.start();
+            }
 
         } catch (InterruptedException e) {
             e.printStackTrace();
