@@ -3,6 +3,7 @@ package rs.raf.demo.services;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.scheduling.TaskScheduler;
+import org.springframework.scheduling.support.CronTrigger;
 import org.springframework.stereotype.Service;
 import rs.raf.demo.model.ErrorMessage;
 import rs.raf.demo.model.VacuumCleaner;
@@ -14,6 +15,7 @@ import rs.raf.demo.requests.ScheduleOperationRequest;
 import rs.raf.demo.tasks.DischargeVacuumCleanerTask;
 import rs.raf.demo.tasks.StartVacuumCleanerTask;
 import rs.raf.demo.tasks.StopVacuumCleanerTask;
+import rs.raf.demo.utils.Util;
 
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
@@ -26,12 +28,14 @@ public class VacuumCleanerService {
     private final VacuumCleanerRepository vacuumCleanerRepository;
     private final UserRepository userRepository;
     private final ErrorMessageRepository errorMessageRepository;
+    private final TaskScheduler taskScheduler;
 
     @Autowired
-    public VacuumCleanerService(VacuumCleanerRepository vacuumCleanerRepository, UserRepository userRepository, ErrorMessageRepository errorMessageRepository) {
+    public VacuumCleanerService(VacuumCleanerRepository vacuumCleanerRepository, UserRepository userRepository, ErrorMessageRepository errorMessageRepository, TaskScheduler taskScheduler) {
         this.vacuumCleanerRepository = vacuumCleanerRepository;
         this.userRepository = userRepository;
         this.errorMessageRepository = errorMessageRepository;
+        this.taskScheduler = taskScheduler;
     }
 
     public VacuumCleaner create(String name, String email){
@@ -171,4 +175,40 @@ public class VacuumCleanerService {
 
     }
 
+
+    public void scheduleDischargeVC(ScheduleOperationRequest operationRequest){
+        VacuumCleaner vacuumCleaner = this.vacuumCleanerRepository.findById(operationRequest.getId()).orElse(null);
+        System.out.println("------DISCHARGE-------");
+        System.out.println(vacuumCleaner.getName());
+
+        Random r = new Random();
+        try {
+            int dev = r.nextInt(6) * 1000;
+            Thread.sleep(15000 + dev/2);
+
+            vacuumCleaner.setStatus(VacuumStatus.DISCHARGING);
+            vacuumCleaner = vacuumCleanerRepository.save(vacuumCleaner);
+//            this.vacuumCleanerRepository.setStatusForVc(VacuumStatus.DISCHARGING, id);
+
+            System.out.println("PAUZA");
+            Thread.sleep(15000 + dev/2);
+
+//            this.vacuumCleanerRepository.setStatusForVc(VacuumStatus.STOPPED, id);
+
+            vacuumCleaner.setStatus(VacuumStatus.STOPPED);
+            vacuumCleaner.setNumOfCycles(0);
+            vacuumCleanerRepository.save(vacuumCleaner);
+
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } catch (ObjectOptimisticLockingFailureException ex){
+            ErrorMessage errorMessage = new ErrorMessage();
+            errorMessage.setVacuumCleanerId(operationRequest.getId());
+            errorMessage.setTime(LocalDateTime.now());
+            errorMessage.setOperation("DISCHARGE");
+            errorMessage.setMessage("ObjectOptimisticLockingFailureException");
+            errorMessageRepository.save(errorMessage);
+        }
+
+    }
 }
