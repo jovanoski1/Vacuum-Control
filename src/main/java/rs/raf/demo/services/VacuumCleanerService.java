@@ -94,14 +94,14 @@ public class VacuumCleanerService {
     }
 
     @Transactional
-    public void scheduleStartVC(ScheduleOperationRequest operationRequest){
-        VacuumCleaner vacuumCleaner = this.vacuumCleanerRepository.getById(operationRequest.getId());
-        System.out.println("-------------");
+    public void scheduleStartVC(Long id){
+        VacuumCleaner vacuumCleaner = this.vacuumCleanerRepository.getById(id);
+        System.out.println("------START-------");
         System.out.println(vacuumCleaner.getName());
 
         if (!vacuumCleaner.getStatus().equals(VacuumStatus.STOPPED)){
             ErrorMessage errorMessage = new ErrorMessage();
-            errorMessage.setVacuumCleanerId(operationRequest.getId());
+            errorMessage.setVacuumCleanerId(id);
             errorMessage.setTime(LocalDateTime.now());
             errorMessage.setOperation("START");
             errorMessage.setMessage("Chosen vacuum cleaner is not stopped!");
@@ -120,7 +120,7 @@ public class VacuumCleanerService {
             throw new RuntimeException(e);
         } catch (ObjectOptimisticLockingFailureException ex){
             ErrorMessage errorMessage = new ErrorMessage();
-            errorMessage.setVacuumCleanerId(operationRequest.getId());
+            errorMessage.setVacuumCleanerId(id);
             errorMessage.setTime(LocalDateTime.now());
             errorMessage.setOperation("START");
             errorMessage.setMessage(ex.getMessage());
@@ -128,4 +128,47 @@ public class VacuumCleanerService {
         }
 
     }
+
+    @Transactional
+    public void scheduleStopVC(Long id){
+        VacuumCleaner vacuumCleaner = this.vacuumCleanerRepository.getById(id);
+        System.out.println("------STOP-------");
+        System.out.println(vacuumCleaner.getName());
+
+        if (!vacuumCleaner.getStatus().equals(VacuumStatus.RUNNING)){
+            ErrorMessage errorMessage = new ErrorMessage();
+            errorMessage.setVacuumCleanerId(id);
+            errorMessage.setTime(LocalDateTime.now());
+            errorMessage.setOperation("STOP");
+            errorMessage.setMessage("Chosen vacuum cleaner is not running!");
+            errorMessageRepository.save(errorMessage);
+            return;
+        }
+
+        Random r = new Random();
+        try {
+            Thread.sleep(15000 + r.nextInt(6)*1000);
+
+            vacuumCleaner.setStatus(VacuumStatus.STOPPED);
+            vacuumCleaner.setNumOfCycles(vacuumCleaner.getNumOfCycles() + 1);
+            vacuumCleaner = vacuumCleanerRepository.save(vacuumCleaner);
+
+            if (vacuumCleaner.getNumOfCycles() % 3 == 0){
+                Thread discharge = new Thread(new DischargeVacuumCleanerTask(vacuumCleaner,vacuumCleanerRepository));
+                discharge.start();
+            }
+
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } catch (ObjectOptimisticLockingFailureException ex){
+            ErrorMessage errorMessage = new ErrorMessage();
+            errorMessage.setVacuumCleanerId(id);
+            errorMessage.setTime(LocalDateTime.now());
+            errorMessage.setOperation("STOP");
+            errorMessage.setMessage(ex.getMessage());
+            errorMessageRepository.save(errorMessage);
+        }
+
+    }
+
 }

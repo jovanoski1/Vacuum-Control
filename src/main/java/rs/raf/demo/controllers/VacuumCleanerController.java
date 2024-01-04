@@ -76,7 +76,20 @@ public class VacuumCleanerController {
 
         CronTrigger cron = new CronTrigger(Util.convertTimeToCron(operationRequest.getDateTime()));
         this.taskScheduler.schedule(() -> {
-            this.vacuumCleanerService.scheduleStartVC(operationRequest);
+            this.vacuumCleanerService.scheduleStartVC(operationRequest.getId());
+        }, cron);
+        return ResponseEntity.ok().build();
+    }
+
+    @PreAuthorize("hasAuthority('can_stop_vacuum')")
+    @PostMapping("/scheduleStop")
+    public ResponseEntity<Boolean> scheduleStopVC(@Valid @RequestBody ScheduleOperationRequest operationRequest){
+
+        System.out.println(Util.convertTimeToCron(operationRequest.getDateTime()));
+
+        CronTrigger cron = new CronTrigger(Util.convertTimeToCron(operationRequest.getDateTime()));
+        this.taskScheduler.schedule(() -> {
+            this.vacuumCleanerService.scheduleStopVC(operationRequest.getId());
         }, cron);
         return ResponseEntity.ok().build();
     }
