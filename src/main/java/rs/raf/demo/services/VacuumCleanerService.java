@@ -1,27 +1,37 @@
 package rs.raf.demo.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
+import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
+import rs.raf.demo.model.ErrorMessage;
 import rs.raf.demo.model.VacuumCleaner;
 import rs.raf.demo.model.VacuumStatus;
+import rs.raf.demo.repositories.ErrorMessageRepository;
 import rs.raf.demo.repositories.UserRepository;
 import rs.raf.demo.repositories.VacuumCleanerRepository;
+import rs.raf.demo.requests.ScheduleOperationRequest;
 import rs.raf.demo.tasks.DischargeVacuumCleanerTask;
 import rs.raf.demo.tasks.StartVacuumCleanerTask;
 import rs.raf.demo.tasks.StopVacuumCleanerTask;
 
+import javax.transaction.Transactional;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Random;
 
 @Service
 public class VacuumCleanerService {
 
     private final VacuumCleanerRepository vacuumCleanerRepository;
     private final UserRepository userRepository;
+    private final ErrorMessageRepository errorMessageRepository;
 
     @Autowired
-    public VacuumCleanerService(VacuumCleanerRepository vacuumCleanerRepository, UserRepository userRepository) {
+    public VacuumCleanerService(VacuumCleanerRepository vacuumCleanerRepository, UserRepository userRepository, ErrorMessageRepository errorMessageRepository) {
         this.vacuumCleanerRepository = vacuumCleanerRepository;
         this.userRepository = userRepository;
+        this.errorMessageRepository = errorMessageRepository;
     }
 
     public VacuumCleaner create(String name, String email){
@@ -38,7 +48,9 @@ public class VacuumCleanerService {
 
     public VacuumCleaner removeCleaner(Long id){
         VacuumCleaner vacuumCleaner = this.vacuumCleanerRepository.getById(id);
-        vacuumCleaner.setActive(false);
+        if (vacuumCleaner.getStatus().equals(VacuumStatus.STOPPED)){
+            vacuumCleaner.setActive(false);
+        }
         return this.vacuumCleanerRepository.save(vacuumCleaner);
     }
 
@@ -81,4 +93,39 @@ public class VacuumCleanerService {
         return true;
     }
 
+    @Transactional
+    public void scheduleStartVC(ScheduleOperationRequest operationRequest){
+        VacuumCleaner vacuumCleaner = this.vacuumCleanerRepository.getById(operationRequest.getId());
+        System.out.println("-------------");
+        System.out.println(vacuumCleaner.getName());
+
+        if (!vacuumCleaner.getStatus().equals(VacuumStatus.STOPPED)){
+            ErrorMessage errorMessage = new ErrorMessage();
+            errorMessage.setVacuumCleanerId(operationRequest.getId());
+            errorMessage.setTime(LocalDateTime.now());
+            errorMessage.setOperation("START");
+            errorMessage.setMessage("Chosen vacuum cleaner is not stopped!");
+            errorMessageRepository.save(errorMessage);
+            return;
+        }
+
+        Random r = new Random();
+        try {
+            Thread.sleep(15000 + r.nextInt(6)*1000);
+
+            vacuumCleaner.setStatus(VacuumStatus.RUNNING);
+            vacuumCleanerRepository.save(vacuumCleaner);
+
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } catch (ObjectOptimisticLockingFailureException ex){
+            ErrorMessage errorMessage = new ErrorMessage();
+            errorMessage.setVacuumCleanerId(operationRequest.getId());
+            errorMessage.setTime(LocalDateTime.now());
+            errorMessage.setOperation("START");
+            errorMessage.setMessage(ex.getMessage());
+            errorMessageRepository.save(errorMessage);
+        }
+
+    }
 }

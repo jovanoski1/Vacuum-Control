@@ -3,12 +3,19 @@ package rs.raf.demo.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.TaskScheduler;
+import org.springframework.scheduling.support.CronTrigger;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import rs.raf.demo.model.VacuumCleaner;
+import rs.raf.demo.requests.ScheduleOperationRequest;
 import rs.raf.demo.services.VacuumCleanerService;
+import rs.raf.demo.utils.Util;
 
+import javax.swing.plaf.basic.BasicDesktopIconUI;
+import javax.validation.Valid;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -17,10 +24,12 @@ import java.util.List;
 public class VacuumCleanerController {
 
     private final VacuumCleanerService vacuumCleanerService;
+    private final TaskScheduler taskScheduler;
 
     @Autowired
-    public VacuumCleanerController(VacuumCleanerService vacuumCleanerService) {
+    public VacuumCleanerController(VacuumCleanerService vacuumCleanerService, TaskScheduler taskScheduler) {
         this.vacuumCleanerService = vacuumCleanerService;
+        this.taskScheduler = taskScheduler;
     }
 
 
@@ -57,5 +66,18 @@ public class VacuumCleanerController {
     @GetMapping("/discharge/{id}")
     public ResponseEntity<Boolean> dischargeVC(@PathVariable("id") Long id){
         return ResponseEntity.ok(vacuumCleanerService.dischargeVC(id));
+    }
+
+    @PreAuthorize("hasAuthority('can_start_vacuum')")
+    @PostMapping("/scheduleStart")
+    public ResponseEntity<Boolean> scheduleStartVC(@Valid @RequestBody ScheduleOperationRequest operationRequest){
+
+        System.out.println(Util.convertTimeToCron(operationRequest.getDateTime()));
+
+        CronTrigger cron = new CronTrigger(Util.convertTimeToCron(operationRequest.getDateTime()));
+        this.taskScheduler.schedule(() -> {
+            this.vacuumCleanerService.scheduleStartVC(operationRequest);
+        }, cron);
+        return ResponseEntity.ok().build();
     }
 }

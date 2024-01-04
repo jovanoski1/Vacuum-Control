@@ -19,7 +19,7 @@ public class VacuumCleaner {
     private boolean active = true;
     private int numOfCycles = 0;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "addedBy", referencedColumnName = "userId")
     @JsonIgnore
     private User owner;
