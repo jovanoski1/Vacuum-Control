@@ -9,6 +9,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import rs.raf.demo.model.VacuumCleaner;
+import rs.raf.demo.requests.FilterVacuumRequest;
 import rs.raf.demo.requests.ScheduleOperationRequest;
 import rs.raf.demo.services.VacuumCleanerService;
 import rs.raf.demo.utils.Util;
@@ -38,10 +39,10 @@ public class VacuumCleanerController {
     public ResponseEntity<VacuumCleaner> create(@PathVariable("name") String name) {
         return ResponseEntity.ok(vacuumCleanerService.create(name, SecurityContextHolder.getContext().getAuthentication().getName()));
     }
-
+    @PreAuthorize("hasAuthority('can_search_vacuum')")
     @GetMapping()
     public ResponseEntity<List<VacuumCleaner>> getAll(){
-        return ResponseEntity.ok(vacuumCleanerService.getAllByOwner(SecurityContextHolder.getContext().getAuthentication().getName()));
+        return ResponseEntity.ok(vacuumCleanerService.getAllByOwner());
     }
 
     @PreAuthorize("hasAuthority('can_remove_vacuum')")
@@ -54,6 +55,12 @@ public class VacuumCleanerController {
     @GetMapping("/start/{id}")
     public ResponseEntity<Boolean> startVC(@PathVariable("id") Long id){
         return ResponseEntity.ok(vacuumCleanerService.startVC(id));
+    }
+
+    @PreAuthorize("hasAuthority('can_search_vacuum')")
+    @PostMapping("/filter")
+    public ResponseEntity<List<VacuumCleaner>> filter(@Valid @RequestBody FilterVacuumRequest request){
+        return ResponseEntity.ok(vacuumCleanerService.filter(request));
     }
 
     @PreAuthorize("hasAuthority('can_stop_vacuum')")

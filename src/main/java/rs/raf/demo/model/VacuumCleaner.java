@@ -5,6 +5,7 @@ import lombok.Data;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
+import java.time.LocalDateTime;
 
 @Data
 @Entity
@@ -18,6 +19,7 @@ public class VacuumCleaner {
     private VacuumStatus status = VacuumStatus.STOPPED;
     private boolean active = true;
     private int numOfCycles = 0;
+    private LocalDateTime creationTime = LocalDateTime.now();
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "addedBy", referencedColumnName = "userId")

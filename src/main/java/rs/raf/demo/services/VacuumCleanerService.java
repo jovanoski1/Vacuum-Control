@@ -2,6 +2,7 @@ package rs.raf.demo.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import rs.raf.demo.model.ErrorMessage;
 import rs.raf.demo.model.VacuumCleaner;
@@ -9,14 +10,17 @@ import rs.raf.demo.model.VacuumStatus;
 import rs.raf.demo.repositories.ErrorMessageRepository;
 import rs.raf.demo.repositories.UserRepository;
 import rs.raf.demo.repositories.VacuumCleanerRepository;
+import rs.raf.demo.requests.FilterVacuumRequest;
 import rs.raf.demo.requests.ScheduleOperationRequest;
 import rs.raf.demo.tasks.DischargeVacuumCleanerTask;
 import rs.raf.demo.tasks.StartVacuumCleanerTask;
 import rs.raf.demo.tasks.StopVacuumCleanerTask;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 @Service
 public class VacuumCleanerService {
@@ -40,8 +44,8 @@ public class VacuumCleanerService {
         return vacuumCleaner;
     }
 
-    public List<VacuumCleaner> getAllByOwner(String email){
-        return this.vacuumCleanerRepository.findVacuumCleanersByOwner(userRepository.findUserByEmail(email));
+    public List<VacuumCleaner> getAllByOwner(){
+        return this.vacuumCleanerRepository.findVacuumCleanersByOwner(userRepository.findUserByEmail(SecurityContextHolder.getContext().getAuthentication().getName()));
     }
 
     public VacuumCleaner removeCleaner(Long id){
@@ -207,5 +211,36 @@ public class VacuumCleanerService {
             errorMessageRepository.save(errorMessage);
         }
 
+    }
+
+    public List<VacuumCleaner> filter(FilterVacuumRequest request){
+        List<VacuumCleaner> all = this.getAllByOwner();
+
+
+        if (request.getName() != null) {
+            all = all.stream()
+                    .filter(vc -> vc.getName().toLowerCase().contains(request.getName().toLowerCase()))
+                    .collect(Collectors.toList());
+        }
+
+        if (request.getStatus() != null) {
+            all = all.stream()
+                    .filter(vc -> vc.getStatus().equals(request.getStatus()))
+                    .collect(Collectors.toList());
+        }
+
+        if (request.getDateFrom() != null && request.getDateTo() != null) {
+            LocalDateTime dateFrom = request.getDateFrom().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+            LocalDateTime dateTo = request.getDateTo().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+
+            all = all.stream()
+                    .filter(vc -> {
+                        LocalDateTime creationTime = vc.getCreationTime();
+                        return creationTime.isAfter(dateFrom) && creationTime.isBefore(dateTo);
+                    })
+                    .collect(Collectors.toList());
+        }
+
+        return all;
     }
 }
