@@ -14,7 +14,6 @@ import rs.raf.demo.services.VacuumCleanerService;
 import rs.raf.demo.utils.Util;
 
 import javax.validation.Valid;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -74,11 +73,10 @@ public class VacuumCleanerController {
     public ResponseEntity<Boolean> scheduleStartVC(@Valid @RequestBody ScheduleOperationRequest operationRequest){
 
         System.out.println(Util.convertTimeToCron(operationRequest.getDateTime()));
+//        operationRequest.setDateTime(LocalDateTime.now().plusSeconds(2));
 
         CronTrigger cron = new CronTrigger(Util.convertTimeToCron(operationRequest.getDateTime()));
-        this.taskScheduler.schedule(() -> {
-            this.vacuumCleanerService.scheduleStartVC(operationRequest.getId());
-        }, cron);
+        this.taskScheduler.schedule(() -> this.vacuumCleanerService.scheduleStartVC(operationRequest.getId()), cron);
         return ResponseEntity.ok().build();
     }
 
@@ -87,11 +85,10 @@ public class VacuumCleanerController {
     public ResponseEntity<Boolean> scheduleStopVC(@Valid @RequestBody ScheduleOperationRequest operationRequest){
 
         System.out.println(Util.convertTimeToCron(operationRequest.getDateTime()));
+//        operationRequest.setDateTime(LocalDateTime.now().plusSeconds(2));
 
         CronTrigger cron = new CronTrigger(Util.convertTimeToCron(operationRequest.getDateTime()));
-        this.taskScheduler.schedule(() -> {
-            this.vacuumCleanerService.scheduleStopVC(operationRequest.getId());
-        }, cron);
+        this.taskScheduler.schedule(() -> this.vacuumCleanerService.scheduleStopVC(operationRequest.getId()), cron);
         return ResponseEntity.ok().build();
     }
 
@@ -100,11 +97,10 @@ public class VacuumCleanerController {
     public ResponseEntity<Boolean> scheduleDischargeVC(@Valid @RequestBody ScheduleOperationRequest operationRequest){
 
         System.out.println(Util.convertTimeToCron(operationRequest.getDateTime()));
-        operationRequest.setDateTime(LocalDateTime.now().plusSeconds(2));
+//        operationRequest.setDateTime(LocalDateTime.now().plusSeconds(2));
+
         CronTrigger cron = new CronTrigger(Util.convertTimeToCron(operationRequest.getDateTime()));
-        this.taskScheduler.schedule(() -> {
-            this.vacuumCleanerService.scheduleDischargeVC(operationRequest);
-        }, cron);
+        this.taskScheduler.schedule(() -> this.vacuumCleanerService.scheduleDischargeVC(operationRequest), cron);
 //        this.vacuumCleanerService.scheduleDischargeVC(operationRequest);
         return ResponseEntity.ok().build();
     }

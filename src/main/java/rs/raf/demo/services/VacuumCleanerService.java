@@ -2,8 +2,6 @@ package rs.raf.demo.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
-import org.springframework.scheduling.TaskScheduler;
-import org.springframework.scheduling.support.CronTrigger;
 import org.springframework.stereotype.Service;
 import rs.raf.demo.model.ErrorMessage;
 import rs.raf.demo.model.VacuumCleaner;
@@ -15,9 +13,7 @@ import rs.raf.demo.requests.ScheduleOperationRequest;
 import rs.raf.demo.tasks.DischargeVacuumCleanerTask;
 import rs.raf.demo.tasks.StartVacuumCleanerTask;
 import rs.raf.demo.tasks.StopVacuumCleanerTask;
-import rs.raf.demo.utils.Util;
 
-import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Random;
@@ -28,14 +24,12 @@ public class VacuumCleanerService {
     private final VacuumCleanerRepository vacuumCleanerRepository;
     private final UserRepository userRepository;
     private final ErrorMessageRepository errorMessageRepository;
-    private final TaskScheduler taskScheduler;
 
     @Autowired
-    public VacuumCleanerService(VacuumCleanerRepository vacuumCleanerRepository, UserRepository userRepository, ErrorMessageRepository errorMessageRepository, TaskScheduler taskScheduler) {
+    public VacuumCleanerService(VacuumCleanerRepository vacuumCleanerRepository, UserRepository userRepository, ErrorMessageRepository errorMessageRepository) {
         this.vacuumCleanerRepository = vacuumCleanerRepository;
         this.userRepository = userRepository;
         this.errorMessageRepository = errorMessageRepository;
-        this.taskScheduler = taskScheduler;
     }
 
     public VacuumCleaner create(String name, String email){
@@ -97,9 +91,10 @@ public class VacuumCleanerService {
         return true;
     }
 
-    @Transactional
+//    @Transactional
     public void scheduleStartVC(Long id){
-        VacuumCleaner vacuumCleaner = this.vacuumCleanerRepository.getById(id);
+        VacuumCleaner vacuumCleaner = this.vacuumCleanerRepository.findById(id).orElse(null);
+        if (vacuumCleaner == null)return;
         System.out.println("------START-------");
         System.out.println(vacuumCleaner.getName());
 
@@ -127,15 +122,16 @@ public class VacuumCleanerService {
             errorMessage.setVacuumCleanerId(id);
             errorMessage.setTime(LocalDateTime.now());
             errorMessage.setOperation("START");
-            errorMessage.setMessage(ex.getMessage());
+            errorMessage.setMessage("ObjectOptimisticLockingFailureException");
             errorMessageRepository.save(errorMessage);
         }
 
     }
 
-    @Transactional
+//    @Transactional
     public void scheduleStopVC(Long id){
-        VacuumCleaner vacuumCleaner = this.vacuumCleanerRepository.getById(id);
+        VacuumCleaner vacuumCleaner = this.vacuumCleanerRepository.findById(id).orElse(null);
+        if (vacuumCleaner == null) return;
         System.out.println("------STOP-------");
         System.out.println(vacuumCleaner.getName());
 
@@ -169,7 +165,7 @@ public class VacuumCleanerService {
             errorMessage.setVacuumCleanerId(id);
             errorMessage.setTime(LocalDateTime.now());
             errorMessage.setOperation("STOP");
-            errorMessage.setMessage(ex.getMessage());
+            errorMessage.setMessage("ObjectOptimisticLockingFailureException");
             errorMessageRepository.save(errorMessage);
         }
 
@@ -178,6 +174,7 @@ public class VacuumCleanerService {
 
     public void scheduleDischargeVC(ScheduleOperationRequest operationRequest){
         VacuumCleaner vacuumCleaner = this.vacuumCleanerRepository.findById(operationRequest.getId()).orElse(null);
+        if (vacuumCleaner == null)return;
         System.out.println("------DISCHARGE-------");
         System.out.println(vacuumCleaner.getName());
 
