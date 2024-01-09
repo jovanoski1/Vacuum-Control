@@ -6,11 +6,14 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import rs.raf.demo.model.Role;
 import rs.raf.demo.model.User;
 import rs.raf.demo.requests.LoginRequest;
 import rs.raf.demo.responses.LoginResponse;
 import rs.raf.demo.services.UserService;
 import rs.raf.demo.utils.JwtUtil;
+
+import java.util.stream.Collectors;
 
 @RestController
 @CrossOrigin
@@ -62,7 +65,8 @@ public class AuthController {
                         canStopVacuum,
                         canDischargeVacuum,
                         canAddVacuum,
-                        canRemoveVacuum
+                        canRemoveVacuum,
+                        u.getPermissions().stream().map(Role::getRole).collect(Collectors.toList())
                 )
         );
     }

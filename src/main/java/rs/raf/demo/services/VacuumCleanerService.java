@@ -56,43 +56,48 @@ public class VacuumCleanerService {
         return this.vacuumCleanerRepository.save(vacuumCleaner);
     }
 
-    public boolean startVC(Long id){
+    public int startVC(Long id){
         VacuumCleaner vacuumCleaner = this.vacuumCleanerRepository.getById(id);
 
         if (!vacuumCleaner.getStatus().equals(VacuumStatus.STOPPED)){
-            return false;
+            return 0;
         }
 
-        Thread newThread = new Thread(new StartVacuumCleanerTask(vacuumCleaner, vacuumCleanerRepository));
+        Random r = new Random();
+        int wait = 15000 + r.nextInt(6)*1000;
+        Thread newThread = new Thread(new StartVacuumCleanerTask(vacuumCleaner, vacuumCleanerRepository, wait));
         newThread.start();
 
-        return true;
+        return wait;
     }
 
-    public boolean stopVC(Long id){
+    public int stopVC(Long id){
         VacuumCleaner vacuumCleaner = this.vacuumCleanerRepository.getById(id);
 
         if (!vacuumCleaner.getStatus().equals(VacuumStatus.RUNNING)){
-            return false;
+            return 0;
         }
 
-        Thread newThread = new Thread(new StopVacuumCleanerTask(vacuumCleaner, vacuumCleanerRepository));
+        Random r = new Random();
+        int wait = 15000 + r.nextInt(6)*1000;
+        Thread newThread = new Thread(new StopVacuumCleanerTask(vacuumCleaner, vacuumCleanerRepository, wait));
         newThread.start();
 
-        return true;
+        return wait;
     }
 
-    public boolean dischargeVC(Long id){
+    public int dischargeVC(Long id){
         VacuumCleaner vacuumCleaner = this.vacuumCleanerRepository.getById(id);
 
         if (!vacuumCleaner.getStatus().equals(VacuumStatus.STOPPED)){
-            return false;
+            return 0;
         }
-
-        Thread newThread = new Thread(new DischargeVacuumCleanerTask(vacuumCleaner, vacuumCleanerRepository));
+        Random r = new Random();
+        int wait = 30000 + r.nextInt(6) * 1000;
+        Thread newThread = new Thread(new DischargeVacuumCleanerTask(vacuumCleaner, vacuumCleanerRepository, wait));
         newThread.start();
 
-        return true;
+        return wait;
     }
 
 //    @Transactional
@@ -158,7 +163,7 @@ public class VacuumCleanerService {
             vacuumCleaner = vacuumCleanerRepository.save(vacuumCleaner);
 
             if (vacuumCleaner.getNumOfCycles() % 3 == 0){
-                Thread discharge = new Thread(new DischargeVacuumCleanerTask(vacuumCleaner,vacuumCleanerRepository));
+                Thread discharge = new Thread(new DischargeVacuumCleanerTask(vacuumCleaner,vacuumCleanerRepository, 30000 + r.nextInt(6) * 1000));
                 discharge.start();
             }
 
@@ -210,7 +215,6 @@ public class VacuumCleanerService {
             errorMessage.setMessage("ObjectOptimisticLockingFailureException");
             errorMessageRepository.save(errorMessage);
         }
-
     }
 
     public List<VacuumCleaner> filter(FilterVacuumRequest request){

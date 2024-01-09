@@ -1,6 +1,7 @@
 package rs.raf.demo.controllers;
 
 
+import com.sun.xml.bind.v2.TODO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
@@ -29,8 +30,8 @@ public class VacuumCleanerController {
     public VacuumCleanerController(VacuumCleanerService vacuumCleanerService, ThreadPoolTaskScheduler taskScheduler) {
         this.vacuumCleanerService = vacuumCleanerService;
         this.taskScheduler = taskScheduler;
-        this.taskScheduler.setPoolSize(2);
-
+        this.taskScheduler.setPoolSize(8);
+        // TODO promeni da bude 1:M veza VC-ErrorMsg
     }
 
 
@@ -46,14 +47,14 @@ public class VacuumCleanerController {
     }
 
     @PreAuthorize("hasAuthority('can_remove_vacuum')")
-    @PostMapping("/remove/{id}")
+    @DeleteMapping("/remove/{id}")
     public ResponseEntity<VacuumCleaner> removeVC(@PathVariable("id") Long id) {
         return ResponseEntity.ok(vacuumCleanerService.removeCleaner(id));
     }
 
     @PreAuthorize("hasAuthority('can_start_vacuum')")
     @GetMapping("/start/{id}")
-    public ResponseEntity<Boolean> startVC(@PathVariable("id") Long id){
+    public ResponseEntity<Integer> startVC(@PathVariable("id") Long id){
         return ResponseEntity.ok(vacuumCleanerService.startVC(id));
     }
 
@@ -65,13 +66,13 @@ public class VacuumCleanerController {
 
     @PreAuthorize("hasAuthority('can_stop_vacuum')")
     @GetMapping("/stop/{id}")
-    public ResponseEntity<Boolean> stopVC(@PathVariable("id") Long id){
+    public ResponseEntity<Integer> stopVC(@PathVariable("id") Long id){
         return ResponseEntity.ok(vacuumCleanerService.stopVC(id));
     }
 
     @PreAuthorize("hasAuthority('can_discharge_vacuum')")
     @GetMapping("/discharge/{id}")
-    public ResponseEntity<Boolean> dischargeVC(@PathVariable("id") Long id){
+    public ResponseEntity<Integer> dischargeVC(@PathVariable("id") Long id){
         return ResponseEntity.ok(vacuumCleanerService.dischargeVC(id));
     }
 

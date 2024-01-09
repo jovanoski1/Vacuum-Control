@@ -10,18 +10,19 @@ import java.util.Random;
 public class StartVacuumCleanerTask implements Runnable{
     private final VacuumCleaner vacuumCleaner;
     private final VacuumCleanerRepository vacuumCleanerRepository;
+    private int waitTime;
 
-    public StartVacuumCleanerTask(VacuumCleaner vacuumCleaner, VacuumCleanerRepository vacuumCleanerRepository) {
+    public StartVacuumCleanerTask(VacuumCleaner vacuumCleaner, VacuumCleanerRepository vacuumCleanerRepository, int waitTime) {
         this.vacuumCleaner = vacuumCleaner;
         this.vacuumCleanerRepository = vacuumCleanerRepository;
+        this.waitTime=waitTime;
     }
 
 
     @Override
     public void run() {
         try {
-            Random r = new Random();
-            Thread.sleep(15000 + r.nextInt(6)*1000);
+            Thread.sleep(waitTime);
 
             vacuumCleaner.setStatus(VacuumStatus.RUNNING);
             vacuumCleanerRepository.save(vacuumCleaner);

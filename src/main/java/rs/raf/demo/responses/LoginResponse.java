@@ -2,6 +2,10 @@ package rs.raf.demo.responses;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import rs.raf.demo.model.Role;
+
+import java.util.List;
+import java.util.Set;
 
 @Data
 @AllArgsConstructor
@@ -18,5 +22,6 @@ public class LoginResponse {
     private boolean canAddVacuum;
     private boolean canRemoveVacuum;
 
+    private List<String> permissions;
 
 }

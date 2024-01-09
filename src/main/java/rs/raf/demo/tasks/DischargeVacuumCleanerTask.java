@@ -10,10 +10,12 @@ import java.util.Random;
 public class DischargeVacuumCleanerTask implements Runnable{
     private VacuumCleaner vacuumCleaner;
     private final VacuumCleanerRepository vacuumCleanerRepository;
+    private final int waitTime;
 
-    public DischargeVacuumCleanerTask(VacuumCleaner vacuumCleaner, VacuumCleanerRepository vacuumCleanerRepository) {
+    public DischargeVacuumCleanerTask(VacuumCleaner vacuumCleaner, VacuumCleanerRepository vacuumCleanerRepository, int waitTime) {
         this.vacuumCleaner = vacuumCleaner;
         this.vacuumCleanerRepository = vacuumCleanerRepository;
+        this.waitTime = waitTime;
     }
 
 
@@ -21,15 +23,16 @@ public class DischargeVacuumCleanerTask implements Runnable{
     public void run() {
         try {
             Random r = new Random();
-            int dev = r.nextInt(6) * 1000;
-            Thread.sleep(15000 + dev/2);
+
+            Thread.sleep(waitTime/2);
 
             vacuumCleaner.setStatus(VacuumStatus.DISCHARGING);
             vacuumCleaner = vacuumCleanerRepository.save(vacuumCleaner);
 
-            Thread.sleep(15000 + dev/2);
+            Thread.sleep(waitTime/2);
 
             vacuumCleaner.setStatus(VacuumStatus.STOPPED);
+            vacuumCleaner.setNumOfCycles(0);
             vacuumCleanerRepository.save(vacuumCleaner);
 
         } catch (InterruptedException e) {
